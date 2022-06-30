@@ -2719,7 +2719,7 @@ class App {
     setupDat() {
         const app = this;
         this.guiObject = {
-            distancePower: 30,
+            distancePower: 3,
             pheromonePower: 1.3,
             passivePheromone: 1.5,
             passiveAscend: true,

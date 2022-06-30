@@ -2760,6 +2760,8 @@ class App {
             simulation: this.gui.addFolder("simulation"),
             antAI: this.gui.addFolder("antAI")
         };
+        this.guiFolders.simulation.close();
+        this.guiFolders.antAI.close();
         this.guiControllers = {
             distancePower: this.guiFolders.antAI.add(this.guiObject, "distancePower", 0.1, 10, 0.1),
             pheromonePower: this.guiFolders.antAI.add(this.guiObject, "pheromonePower", 0.1, 10, 0.1),

@@ -74,7 +74,7 @@ export class App {
             pheromoneIntensity: 15,
             initialPheromone: 1,
             ants: 500,
-            focusedAnt: -2,
+            focusedAnt: 0,
             simSpeed: 1,
             showPheromone: true,
             showBestTrail: true,
@@ -104,9 +104,6 @@ export class App {
             simulation: this.gui.addFolder("simulation"),
             antAI: this.gui.addFolder("antAI")
         }
-
-        this.guiFolders.simulation.open();
-        this.guiFolders.antAI.open();
 
         this.guiControllers = {
             distancePower: this.guiFolders.antAI.add(this.guiObject, "distancePower", 0.1, 10, 0.1),

@@ -64,7 +64,7 @@ export class App {
         const app: App = this;
 
         this.guiObject = {
-            distancePower: 30,
+            distancePower: 3,
             pheromonePower: 1.3,
             passivePheromone: 1.5,
             passiveAscend: true,

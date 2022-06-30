@@ -2719,16 +2719,16 @@ class App {
     setupDat() {
         const app = this;
         this.guiObject = {
-            distancePower: 2.8,
-            pheromonePower: 1,
-            passivePheromone: 5,
-            passiveAscend: false,
-            minimumPheromone: 0.5,
-            pheromoneEvaporationRate: 0.3,
+            distancePower: 30,
+            pheromonePower: 1.3,
+            passivePheromone: 1.5,
+            passiveAscend: true,
+            pheromoneDecay: false,
+            minimumPheromone: 0.1,
+            pheromoneEvaporationRate: 0.8,
             pheromoneIntensity: 15,
             initialPheromone: 1,
-            pheromoneDecay: true,
-            ants: 200,
+            ants: 500,
             focusedAnt: -2,
             simSpeed: 1,
             showPheromone: true,
@@ -2765,16 +2765,16 @@ class App {
         this.guiControllers = {
             distancePower: this.guiFolders.antAI.add(this.guiObject, "distancePower", 0.1, 10, 0.1),
             pheromonePower: this.guiFolders.antAI.add(this.guiObject, "pheromonePower", 0.1, 10, 0.1),
-            passivePheromone: this.guiFolders.antAI.add(this.guiObject, "passivePheromone", 1, 20, 1),
+            passivePheromone: this.guiFolders.antAI.add(this.guiObject, "passivePheromone", 1, 20, 0.5),
             minimumPheromone: this.guiFolders.antAI.add(this.guiObject, "minimumPheromone", 0.01, 2, 0.01).name("minPheromone"),
             pheromoneEvaporationRate: this.guiFolders.antAI.add(this.guiObject, "pheromoneEvaporationRate", 0.01, 1, 0.01).name("evaporationRate"),
             pheromoneIntensity: this.guiFolders.antAI.add(this.guiObject, "pheromoneIntensity", 1, 20, 1),
             initialPheromone: this.guiFolders.antAI.add(this.guiObject, "initialPheromone", 0.1, 9.9, 0.1),
             pheromoneDecay: this.guiFolders.antAI.add(this.guiObject, "pheromoneDecay").name("pheroDecay?"),
+            passiveAscend: this.guiFolders.antAI.add(this.guiObject, "passiveAscend").name("passiveAscend?"),
             ants: this.guiFolders.simulation.add(this.guiObject, "ants", 5, 10000),
             focusedAnt: this.guiFolders.simulation.add(this.guiObject, "focusedAnt", -2, -1, 1),
             simSpeed: this.guiFolders.simulation.add(this.guiObject, "simSpeed", 1, 1000),
-            passiveAscend: this.guiFolders.simulation.add(this.guiObject, "passiveAscend"),
             showPheromone: this.guiFolders.simulation.add(this.guiObject, "showPheromone"),
             showBestTrail: this.guiFolders.simulation.add(this.guiObject, "showBestTrail"),
             paused: this.guiFolders.simulation.add(this.guiObject, "paused").name("paused?"),
@@ -2816,13 +2816,19 @@ class App {
                 this.ui.stroke();
                 this.ui.closePath();
             }
+            this.ui.beginPath();
+            this.ui.strokeStyle = "white";
+            this.ui.font = "30px Arial";
+            this.ui.strokeText("Simulation Step: " + Simulation_1.Simulation.steps, 20, 80);
+            this.ui.stroke();
+            this.ui.closePath();
         }
     }
     raf() {
         if (this.guiControllers.fadeClear.getValue()) {
             this.ui.beginPath();
             this.ui.fillRect(0, 0, this.width, this.height);
-            this.ui.fillStyle = "#00000055";
+            this.ui.fillStyle = "#00000011";
             this.ui.fill();
             this.ui.closePath();
         }
@@ -2899,11 +2905,11 @@ class PheroTrail extends BaseObject_1.BaseObject {
     }
     step() {
         if (this.app.guiControllers.showPheromone.getValue()) {
-            const alpha = util_1.Utils.normalize(this.value, 20, this.app.guiControllers.minimumPheromone.getValue());
+            const alpha = util_1.Utils.clamp(util_1.Utils.normalize(this.value, 20, this.app.guiControllers.minimumPheromone.getValue()), 0, 0.9);
             this.app.ui.save();
             this.app.ui.beginPath();
             this.app.ui.globalAlpha = alpha;
-            this.app.ui.lineWidth = 5;
+            this.app.ui.lineWidth = 1;
             this.app.ui.strokeStyle = "#0000aa";
             this.app.ui.moveTo(this.point1.location.x, this.point1.location.y);
             this.app.ui.lineTo(this.point2.location.x, this.point2.location.y);
@@ -3004,6 +3010,7 @@ var SimulationState;
 var Simulation;
 (function (Simulation) {
     Simulation.simulationState = SimulationState.PATHFINDING;
+    Simulation.steps = 0;
     function simTicker(_ = false) {
         if (Simulation.app.guiControllers.verboseConsole.getValue() && _)
             console.log("Beginning simulation ticker");
@@ -3099,6 +3106,12 @@ var Simulation;
                 case SimulationState.DONEFINDING:
                     Simulation.app.ants = [];
                     Ant_1.Ant.id = 0;
+                    if (Simulation.app.guiControllers.verboseConsole.getValue())
+                        console.log("Evaporating " + Simulation.app.pheroTrails.length + " pheromone trails");
+                    for (let i = 0; i < Simulation.app.pheroTrails.length; i++) {
+                        const trail = Simulation.app.pheroTrails[i];
+                        trail.evaporate();
+                    }
                     if (Simulation.app.bestAnt) {
                         let previousPoint = Point_1.Point.fromID(Simulation.app, Simulation.app.bestAnt.pathTaken[0]);
                         for (let i = 1; i < Simulation.app.bestAnt.pathTaken.length; i++) {
@@ -3110,11 +3123,7 @@ var Simulation;
                         const trail = PheroTrail_1.PheroTrail.getTrail(Simulation.app, Point_1.Point.fromID(Simulation.app, Simulation.app.bestAnt.pathTaken[0]), previousPoint);
                         trail.value = Simulation.app.guiControllers.pheromoneIntensity.getValue();
                     }
-                    console.log("Evaporating " + Simulation.app.pheroTrails.length + " pheromone trails");
-                    for (let i = 0; i < Simulation.app.pheroTrails.length; i++) {
-                        const trail = Simulation.app.pheroTrails[i];
-                        trail.evaporate();
-                    }
+                    Simulation.steps++;
                     Simulation.simulationState = SimulationState.IDLE;
                     break;
                 case SimulationState.IDLE:
@@ -3139,6 +3148,7 @@ var Simulation;
         Simulation.app.pheroTrails = [];
         Simulation.app.bestAnt = null;
         Ant_1.Ant.id = 0;
+        Simulation.steps = 0;
     }
     Simulation.end = end;
 })(Simulation = exports.Simulation || (exports.Simulation = {}));

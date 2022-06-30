@@ -20,11 +20,11 @@ export class PheroTrail extends BaseObject {
 
     public step() {
         if (this.app.guiControllers.showPheromone.getValue()) {
-            const alpha = Utils.normalize(this.value, 20, this.app.guiControllers.minimumPheromone.getValue());
+            const alpha = Utils.clamp(Utils.normalize(this.value, 20, this.app.guiControllers.minimumPheromone.getValue()), 0, 0.9);
             this.app.ui.save();
             this.app.ui.beginPath();
             this.app.ui.globalAlpha = alpha;
-            this.app.ui.lineWidth = 5;
+            this.app.ui.lineWidth = 1;
             this.app.ui.strokeStyle = "#0000aa";
             this.app.ui.moveTo(this.point1.location.x, this.point1.location.y);
             this.app.ui.lineTo(this.point2.location.x, this.point2.location.y);

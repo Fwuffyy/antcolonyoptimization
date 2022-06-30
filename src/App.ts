@@ -13,7 +13,7 @@ export interface AppSettings {
     initialPheromone: number
     pheromoneEvaporationRate: number
     pheromoneIntensity: number
-    pheromoneDecay: true
+    pheromoneDecay: boolean
     ants: number
     focusedAnt: number
     simSpeed: number
@@ -64,16 +64,16 @@ export class App {
         const app: App = this;
 
         this.guiObject = {
-            distancePower: 2.8,
-            pheromonePower: 1,
-            passivePheromone: 5,
-            passiveAscend: false,
-            minimumPheromone: 0.5,
-            pheromoneEvaporationRate: 0.3,
+            distancePower: 30,
+            pheromonePower: 1.3,
+            passivePheromone: 1.5,
+            passiveAscend: true,
+            pheromoneDecay: false,
+            minimumPheromone: 0.1,
+            pheromoneEvaporationRate: 0.8,
             pheromoneIntensity: 15,
             initialPheromone: 1,
-            pheromoneDecay: true,
-            ants: 200,
+            ants: 500,
             focusedAnt: -2,
             simSpeed: 1,
             showPheromone: true,
@@ -111,17 +111,17 @@ export class App {
         this.guiControllers = {
             distancePower: this.guiFolders.antAI.add(this.guiObject, "distancePower", 0.1, 10, 0.1),
             pheromonePower: this.guiFolders.antAI.add(this.guiObject, "pheromonePower", 0.1, 10, 0.1),
-            passivePheromone: this.guiFolders.antAI.add(this.guiObject, "passivePheromone", 1, 20, 1),
+            passivePheromone: this.guiFolders.antAI.add(this.guiObject, "passivePheromone", 1, 20, 0.5),
             minimumPheromone: this.guiFolders.antAI.add(this.guiObject, "minimumPheromone", 0.01, 2, 0.01).name("minPheromone"),
             pheromoneEvaporationRate: this.guiFolders.antAI.add(this.guiObject, "pheromoneEvaporationRate", 0.01, 1, 0.01).name("evaporationRate"),
             pheromoneIntensity: this.guiFolders.antAI.add(this.guiObject, "pheromoneIntensity", 1, 20, 1),
             initialPheromone: this.guiFolders.antAI.add(this.guiObject, "initialPheromone", 0.1, 9.9, 0.1),
             pheromoneDecay: this.guiFolders.antAI.add(this.guiObject, "pheromoneDecay").name("pheroDecay?"),
+            passiveAscend: this.guiFolders.antAI.add(this.guiObject, "passiveAscend").name("passiveAscend?"),
 
             ants: this.guiFolders.simulation.add(this.guiObject, "ants", 5, 10000),
             focusedAnt: this.guiFolders.simulation.add(this.guiObject, "focusedAnt", -2, -1, 1),
             simSpeed: this.guiFolders.simulation.add(this.guiObject, "simSpeed", 1, 1000),
-            passiveAscend: this.guiFolders.simulation.add(this.guiObject, "passiveAscend"),
             showPheromone: this.guiFolders.simulation.add(this.guiObject, "showPheromone"),
             showBestTrail: this.guiFolders.simulation.add(this.guiObject, "showBestTrail"),
             paused: this.guiFolders.simulation.add(this.guiObject, "paused").name("paused?"),
@@ -168,6 +168,13 @@ export class App {
                 this.ui.stroke();
                 this.ui.closePath();
             }
+
+            this.ui.beginPath();
+            this.ui.strokeStyle = "white";
+            this.ui.font = "30px Arial";
+            this.ui.strokeText("Simulation Step: " + Simulation.steps, 20, 80);
+            this.ui.stroke();
+            this.ui.closePath();
         }
     }
 
@@ -175,7 +182,7 @@ export class App {
         if (this.guiControllers.fadeClear.getValue()) {
             this.ui.beginPath();
             this.ui.fillRect(0, 0, this.width, this.height);
-            this.ui.fillStyle = "#00000055";
+            this.ui.fillStyle = "#00000011";
             this.ui.fill();
             this.ui.closePath();
         } else {

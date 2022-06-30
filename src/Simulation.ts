@@ -15,6 +15,7 @@ export namespace Simulation {
     export let app: App;
     export let started: boolean;
     export let simulationState = SimulationState.PATHFINDING;
+    export let steps: number = 0;
 
     export function simTicker(_: boolean = false) {
         if (app.guiControllers.verboseConsole.getValue() && _)
@@ -121,6 +122,14 @@ export namespace Simulation {
             case SimulationState.DONEFINDING:
                 app.ants = [];
                 Ant.id = 0;
+
+                if (app.guiControllers.verboseConsole.getValue())
+                    console.log("Evaporating " + app.pheroTrails.length + " pheromone trails");
+                for (let i = 0;i < app.pheroTrails.length;i++) {
+                    const trail = app.pheroTrails[i];
+                    trail.evaporate();
+                }
+
                 if (app.bestAnt) {
                     let previousPoint = Point.fromID(app, app.bestAnt.pathTaken[0]);
                     for (let i = 1;i < app.bestAnt!.pathTaken.length;i++) {
@@ -134,12 +143,7 @@ export namespace Simulation {
                     trail.value = app.guiControllers.pheromoneIntensity.getValue();
                 }
 
-                console.log("Evaporating " + app.pheroTrails.length + " pheromone trails");
-                for (let i = 0;i < app.pheroTrails.length;i++) {
-                    const trail = app.pheroTrails[i];
-                    trail.evaporate();
-                }
-
+                steps++;
                 simulationState = SimulationState.IDLE;
                 break;
             case SimulationState.IDLE:
@@ -163,5 +167,6 @@ export namespace Simulation {
         app.pheroTrails = [];
         app.bestAnt = null;
         Ant.id = 0;
+        steps = 0;
     }
 }
